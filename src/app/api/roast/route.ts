@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     // Run sequentially with delay to avoid Groq rate limits
     const roasts = [];
     for (const { agent, target } of roastPairs) {
-      await sleep(300);
+      await sleep(150);
       try {
         const completion = await groq.chat.completions.create({
           model: MODEL,

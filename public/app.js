@@ -408,10 +408,16 @@ async function awardBountyOnChain(bountyId, winnerAddress) {
   try {
     const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     const signer   = provider.getSigner();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+    // Encode calldata directly — bypasses ethers Contract ENS resolution entirely
+    const iface    = new ethers.utils.Interface(CONTRACT_ABI);
+    const calldata = iface.encodeFunctionData('awardBounty', [
+      bountyId,
+      ethers.utils.getAddress(winnerAddress)
+    ]);
 
     logToConsole(`Sending payout to ${winnerAddress.slice(0, 10)}...`, 'muted');
-    const tx      = await contract.awardBounty(bountyId, winnerAddress);
+    const tx      = await signer.sendTransaction({ to: CONTRACT_ADDRESS, data: calldata });
     const receipt = await tx.wait();
     logToConsole(`✅ MON paid out! Tx: ${receipt.transactionHash.slice(0, 20)}...`, 'success');
 
@@ -483,7 +489,7 @@ async function runBattleSequence() {
   }
 
   // STEP 4: Roast phase
-  await wait(1200);
+  await wait(300);
   logToConsole('Round 1 complete. Initiating cross-agent roast engine...', 'red');
   selectedAgents.forEach(a => showTypingIndicator(a.id));
 
