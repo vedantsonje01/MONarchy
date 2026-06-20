@@ -20,6 +20,6 @@ const monadTestnet = {
 export function getPublicClient() {
   return createPublicClient({
     chain: monadTestnet,
-    transport: http(),
+    transport: http(process.env.NEXT_PUBLIC_MONAD_RPC || "https://testnet-rpc.monad.xyz"),
   });
 }
