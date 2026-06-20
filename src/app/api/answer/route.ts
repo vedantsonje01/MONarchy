@@ -7,32 +7,53 @@ import { groq, MODEL } from "@/lib/groq";
 import { getSelectedAgents } from "@/lib/agents";
 
 export async function POST(req: Request) {
-  const { question, selectedAgentIds } = await req.json();
+  try {
+    const { question, selectedAgentIds } = await req.json();
 
-  // Only run the 3 agents the asker picked
-  const agents = getSelectedAgents(selectedAgentIds);
+    if (!question || !selectedAgentIds?.length) {
+      return NextResponse.json(
+        { error: "question and selectedAgentIds are required" },
+        { status: 400 }
+      );
+    }
 
-  const results = await Promise.all(
-    agents.map(async (agent) => {
-      const completion = await groq.chat.completions.create({
-        model: MODEL,
-        messages: [
-          { role: "system", content: agent.systemPrompt },
-          { role: "user", content: question },
-        ],
-        temperature: agent.temperature,
-        max_tokens: 300,
-      });
+    const agents = getSelectedAgents(selectedAgentIds);
 
-      return {
-        agentId: agent.id,
-        name: agent.name,
-        emoji: agent.emoji,
-        color: agent.color,
-        answer: completion.choices[0]?.message?.content || "No response.",
-      };
-    })
-  );
+    const results = await Promise.all(
+      agents.map(async (agent) => {
+        try {
+          const completion = await groq.chat.completions.create({
+            model: MODEL,
+            messages: [
+              { role: "system", content: agent.systemPrompt },
+              { role: "user", content: question },
+            ],
+            temperature: agent.temperature,
+            max_tokens: 300,
+          });
+          return {
+            agentId: agent.id,
+            name: agent.name,
+            emoji: agent.emoji,
+            color: agent.color,
+            answer: completion.choices[0]?.message?.content?.trim() || "No response.",
+          };
+        } catch (err) {
+          console.error("[answer] Agent", agent.id, "failed:", err);
+          return {
+            agentId: agent.id,
+            name: agent.name,
+            emoji: agent.emoji,
+            color: agent.color,
+            answer: "Agent failed to respond. Try again.",
+          };
+        }
+      })
+    );
 
-  return NextResponse.json({ answers: results });
+    return NextResponse.json({ answers: results });
+  } catch (err) {
+    console.error("[/api/answer] Unhandled error:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
