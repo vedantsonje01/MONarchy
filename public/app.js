@@ -406,22 +406,21 @@ async function postBountyOnChain() {
 // ── Award bounty to winner on Monad ─────────────────────────
 async function awardBountyOnChain(bountyId, winnerAddress) {
   try {
-    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
-    const signer   = provider.getSigner();
-
-    // Encode calldata directly — bypasses ethers Contract ENS resolution entirely
-    const iface    = new ethers.utils.Interface(CONTRACT_ABI);
-    const calldata = iface.encodeFunctionData('awardBounty', [
-      bountyId,
-      ethers.utils.getAddress(winnerAddress)
-    ]);
+    // Build calldata using pure ethers utils only (no Provider/Signer = no ENS calls)
+    const selector   = ethers.utils.id('awardBounty(uint256,address)').slice(0, 10);
+    const encId      = ethers.utils.hexZeroPad(ethers.BigNumber.from(bountyId).toHexString(), 32).slice(2);
+    const encWinner  = ethers.utils.hexZeroPad(ethers.utils.getAddress(winnerAddress), 32).slice(2);
+    const calldata   = selector + encId + encWinner;
 
     logToConsole(`Sending payout to ${winnerAddress.slice(0, 10)}...`, 'muted');
-    const tx      = await signer.sendTransaction({ to: CONTRACT_ADDRESS, data: calldata });
-    const receipt = await tx.wait();
-    logToConsole(`✅ MON paid out! Tx: ${receipt.transactionHash.slice(0, 20)}...`, 'success');
 
-    // Refresh reputation badges after payout
+    // Send via window.ethereum directly — zero ethers Provider involvement, zero ENS
+    const txHash = await window.ethereum.request({
+      method: 'eth_sendTransaction',
+      params: [{ from: walletAddress, to: CONTRACT_ADDRESS, data: calldata }]
+    });
+
+    logToConsole(`✅ MON paid out! Tx: ${txHash.slice(0, 20)}...`, 'success');
     await fetchReputationAndAddresses();
   } catch (e) {
     if (e.code === 4001) {
