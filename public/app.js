@@ -202,7 +202,7 @@ async function handleWalletConnect() {
 
   try {
     // Request accounts
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     await provider.send('eth_requestAccounts', []);
 
     // Switch to Monad testnet
@@ -371,7 +371,7 @@ function transitionToBattle() {
 // ── Post bounty on Monad ─────────────────────────────────────
 async function postBountyOnChain() {
   try {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     const signer   = provider.getSigner();
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
@@ -406,7 +406,7 @@ async function postBountyOnChain() {
 // ── Award bounty to winner on Monad ─────────────────────────
 async function awardBountyOnChain(bountyId, winnerAddress) {
   try {
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
     const signer   = provider.getSigner();
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
