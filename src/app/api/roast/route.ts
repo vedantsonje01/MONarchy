@@ -30,9 +30,12 @@ export async function POST(req: Request) {
       });
     });
 
-    // Run sequentially to avoid Groq rate limits
+    const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+    // Run sequentially with small delay to avoid Groq rate limits
     const roasts = [];
     for (const { agent, target } of roastPairs) {
+      await sleep(300);
       try {
         const completion = await groq.chat.completions.create({
           model: MODEL,
