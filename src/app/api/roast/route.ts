@@ -21,18 +21,16 @@ export async function POST(req: Request) {
     const selectedIds = answers.map((a: { agentId: string }) => a.agentId);
     const agents = getSelectedAgents(selectedIds);
 
-    // Build list of all roast pairs
-    const roastPairs: { agent: ReturnType<typeof getSelectedAgents>[0]; target: { agentId: string; name: string; answer: string } }[] = [];
-    agents.forEach((agent) => {
-      const others = answers.filter((a: { agentId: string }) => a.agentId !== agent.id);
-      others.forEach((target: { agentId: string; name: string; answer: string }) => {
-        roastPairs.push({ agent, target });
-      });
-    });
-
     const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-    // Run sequentially with small delay to avoid Groq rate limits
+    // 3 roasts in a chain: agent[0]→agent[1], agent[1]→agent[2], agent[2]→agent[0]
+    // 3 calls instead of 6 — stays well under Vercel timeout and Groq rate limits
+    const roastPairs = agents.map((agent, i) => ({
+      agent,
+      target: answers.find((a: { agentId: string }) => a.agentId === agents[(i + 1) % agents.length].id) as { agentId: string; name: string; answer: string },
+    })).filter(p => p.target);
+
+    // Run sequentially with delay to avoid Groq rate limits
     const roasts = [];
     for (const { agent, target } of roastPairs) {
       await sleep(300);
