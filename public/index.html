@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MONarchy👑 — The Ultimate AI Game Show</title>
+  <meta name="description"
+    content="Witness the ultimate AI battle of wits! AI agents answer, roast, and compete for crypto rewards on the Monad network.">
+  <!-- Google Fonts: Inter and Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@600;800;900&family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Wins badge on agent cards */
+    .agent-wins {
+      color: var(--color-neon);
+      font-size: 11px;
+      font-weight: 700;
+      font-family: var(--font-headings);
+      letter-spacing: 0.5px;
+      margin-top: -4px;
+    }
+    /* Battle start button */
+    #start-battle-btn {
+      margin: 0 auto 32px;
+      display: flex;
+      width: fit-content;
+    }
+    #start-battle-btn.hidden { display: none; }
+  </style>
+</head>
+
+<body>
+
+  <!-- Background neon particles / grid canvas elements if needed, styled in CSS -->
+  <div class="glow-container">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+  </div>
+
+  <div class="app-container">
+
+    <!-- PAGE 1: SETUP & SELECTION -->
+    <section id="screen-setup" class="page-screen active">
+      <!-- Top Navigation Navbar -->
+      <div class="setup-navbar">
+        <!-- Logo Header -->
+        <div class="logo-container-top">
+          <span class="logo-text-top">MONarchy</span>
+          <svg class="logo-crown-top" viewBox="0 0 64 64">
+            <defs>
+              <linearGradient id="crown-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#D4FB08" />
+                <stop offset="100%" stop-color="rgba(212, 251, 8, 0.7)" />
+              </linearGradient>
+            </defs>
+            <path d="M 8,48 L 12,24 L 22,36 L 32,16 L 42,36 L 52,24 L 56,48 Z" fill="url(#crown-gradient)" />
+            <rect x="8" y="48" width="48" height="6" rx="2" fill="url(#crown-gradient)" />
+            <circle cx="12" cy="21" r="2.5" fill="url(#crown-gradient)" />
+            <circle cx="22" cy="33" r="2.5" fill="url(#crown-gradient)" />
+            <circle cx="32" cy="13" r="2.5" fill="url(#crown-gradient)" />
+            <circle cx="42" cy="33" r="2.5" fill="url(#crown-gradient)" />
+            <circle cx="52" cy="21" r="2.5" fill="url(#crown-gradient)" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- Premium Animated Hero (First Slide) -->
+      <header class="hero-header-animated">
+        <h1 class="hero-title-animated">
+          <span class="title-main">Enter the Arena to</span>
+          <span class="title-dynamic-wrap">
+            <span class="dynamic-word active">Ask</span>
+            <span class="dynamic-word">Answer</span>
+            <span class="dynamic-word">Roast</span>
+            <span class="dynamic-word">Win</span>
+          </span>
+        </h1>
+
+        <p class="hero-description">
+          Managing an AI battle today is tough. Join the decentralized monarchy, stake your MON tokens, witness the
+          ultimate agent roasts, and crown the winner.
+        </p>
+      </header>
+
+
+
+      <!-- Setup Form & Agent Grid -->
+      <div class="setup-section">
+        <h2 class="section-title">Select Agents</h2>
+
+        <!-- Chatbox (Question Input) -->
+        <div class="chatbox-container">
+          <label for="question-input" class="input-label">Enter Your Question</label>
+          <textarea id="question-input" class="chatbox-textarea" placeholder="e.g. Is Bitcoin the best store of value?"></textarea>
+        </div>
+
+        <!-- 6 Agent Cards Grid -->
+        <div id="agents-grid" class="agents-grid">
+          <!-- Dynamically populated by app.js -->
+        </div>
+
+        <!-- Next Page Button -->
+        <div class="action-bar">
+          <div class="action-buttons-wrap">
+            <button id="wallet-btn" class="wallet-button connected-toggle">
+              <span class="wallet-icon">🔌</span>
+              <span id="wallet-text">Connect MONAD Wallet</span>
+            </button>
+            <button id="next-page-btn" class="primary-btn disabled" disabled>
+              <span>Next Page</span>
+              <span class="btn-icon">➡️</span>
+            </button>
+          </div>
+          <p id="selection-hint" class="selection-hint">Please enter a question and select exactly 3 agents to proceed.
+          </p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- PAGE 2: BATTLE & REVEAL -->
+    <section id="screen-battle" class="page-screen locked">
+      <!-- Top Betting Bar -->
+      <div class="betting-header">
+        <div class="betting-title-wrap">
+          <span class="fire-icon">🔥</span>
+          <h2>The Battleground</h2>
+        </div>
+        <div class="betting-input-container">
+          <label for="bet-input" class="bet-label">Staked Amount</label>
+          <div class="bet-input-wrap">
+            <input type="number" id="bet-input" class="bet-input" value="0.05" min="0.01" step="0.01">
+            <span class="currency-badge">MON</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Battle Button (shown before sequence begins) -->
+      <button id="start-battle-btn" class="primary-btn">
+        <span>⚔️ Start Battle</span>
+      </button>
+
+      <!-- Live Battle Arena -->
+      <div class="battle-arena">
+        <!-- 3 Side-by-side selected AI contestants panel -->
+        <div id="battle-panels" class="battle-panels">
+          <!-- Dynamically populated by app.js -->
+        </div>
+      </div>
+
+      <!-- Battle Status Console -->
+      <div class="console-box">
+        <div class="console-header">
+          <span class="console-dot green"></span>
+          <span class="console-dot yellow"></span>
+          <span class="console-dot red"></span>
+          <span class="console-title">ARENA FEED</span>
+        </div>
+        <div id="console-logs" class="console-logs">
+          <p class="log-line text-muted">> Waiting to initiate battle...</p>
+        </div>
+      </div>
+
+      <!-- Vote Prompt & Controls -->
+      <div id="battle-controls" class="battle-controls hidden">
+        <div class="vote-prompt-banner">
+          <h3>👑 The Battle has Ended! 👑</h3>
+          <p>Read their answers and roasts, then click the <strong>"Vote & Crown Winner"</strong> button on your
+            favorite agent above to award the prize!</p>
+        </div>
+        <div class="post-battle-actions">
+          <button id="play-again-btn" class="secondary-btn">
+            <span>Reset Game</span>
+            <span class="btn-icon">🔄</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ethers.js v5 for MetaMask wallet interactions -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+  <!-- Scripts -->
+  <script src="characters.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
